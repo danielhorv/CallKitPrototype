@@ -1,0 +1,93 @@
+PODS:
+  - Differentiator (4.0.1)
+  - ObjcExceptionBridging (1.0.1):
+    - ObjcExceptionBridging/ObjcExceptionBridging (= 1.0.1)
+  - ObjcExceptionBridging/ObjcExceptionBridging (1.0.1)
+  - ReactorKit (2.0.1):
+    - RxSwift (~> 5.0)
+  - RxAnimated (0.7.0):
+    - RxAnimated/Core (= 0.7.0)
+    - RxCocoa (~> 5.1)
+    - RxSwift (~> 5.1)
+  - RxAnimated/Core (0.7.0):
+    - RxCocoa (~> 5.1)
+    - RxSwift (~> 5.1)
+  - RxCocoa (5.1.1):
+    - RxRelay (~> 5)
+    - RxSwift (~> 5)
+  - RxCoreLocation (1.4.2):
+    - RxCoreLocation/Core (= 1.4.2)
+  - RxCoreLocation/Core (1.4.2):
+    - RxCocoa (~> 5.1)
+    - RxSwift (~> 5.1)
+  - RxDataSources (4.0.1):
+    - Differentiator (~> 4.0)
+    - RxCocoa (~> 5.0)
+    - RxSwift (~> 5.0)
+  - RxGesture (3.0.2):
+    - RxCocoa (~> 5.1)
+    - RxSwift (~> 5.1)
+  - RxKeyboard (1.0.0):
+    - RxCocoa (~> 5.0)
+    - RxSwift (~> 5.0)
+  - RxOptional (4.1.0):
+    - RxCocoa (~> 5)
+    - RxSwift (~> 5)
+  - RxRelay (5.1.1):
+    - RxSwift (~> 5)
+  - RxSwift (5.1.1)
+  - TAReusableView (1.0.2)
+  - XCGLogger (7.0.1):
+    - XCGLogger/Core (= 7.0.1)
+  - XCGLogger/Core (7.0.1):
+    - ObjcExceptionBridging
+
+DEPENDENCIES:
+  - ReactorKit
+  - RxAnimated
+  - RxCocoa
+  - RxCoreLocation
+  - RxDataSources
+  - RxGesture
+  - RxKeyboard
+  - RxOptional
+  - RxSwift
+  - TAReusableView
+  - XCGLogger
+
+SPEC REPOS:
+  trunk:
+    - Differentiator
+    - ObjcExceptionBridging
+    - ReactorKit
+    - RxAnimated
+    - RxCocoa
+    - RxCoreLocation
+    - RxDataSources
+    - RxGesture
+    - RxKeyboard
+    - RxOptional
+    - RxRelay
+    - RxSwift
+    - TAReusableView
+    - XCGLogger
+
+SPEC CHECKSUMS:
+  Differentiator: 886080237d9f87f322641dedbc5be257061b0602
+  ObjcExceptionBridging: c30e00eb3700467e695faeea30e26e18bd445001
+  ReactorKit: a63c5e11e0fd32d59d672e54178b0ed2876b764b
+  RxAnimated: 8540892468e906e7404595bc51ed4b36b3737ab5
+  RxCocoa: 32065309a38d29b5b0db858819b5bf9ef038b601
+  RxCoreLocation: 0cde68bd64dd1af3e7beaaac8a693ef613fd3a05
+  RxDataSources: efee07fa4de48477eca0a4611e6d11e2da9c1114
+  RxGesture: d6bd7447ca3a596c7a9702a6a2b6a2bb5d8bae54
+  RxKeyboard: 6683c4344304a00f943c158bd8a43ce5469c82a7
+  RxOptional: b1fcd60856807a564c0215c2184b8d33e7826dc2
+  RxRelay: d77f7d771495f43c556cbc43eebd1bb54d01e8e9
+  RxSwift: 81470a2074fa8780320ea5fe4102807cb7118178
+  TAReusableView: cd106ea5cb5b33c12af07a2b595ae65b5b891cbc
+  XCGLogger: 1943831ef907df55108b0b18657953f868de973b
+
+PODFILE CHECKSUM: 6e6ee40d129052bb2bed56b8034e4d1fd5d43f6c
+
+COCOAPODS: 1.9.1

@@ -1,0 +1,15 @@
+${PODS_ROOT}/Target Support Files/Pods-CallKitPrototype/Pods-CallKitPrototype-frameworks.sh
+${BUILT_PRODUCTS_DIR}/Differentiator/Differentiator.framework
+${BUILT_PRODUCTS_DIR}/ReactorKit/ReactorKit.framework
+${BUILT_PRODUCTS_DIR}/RxAnimated/RxAnimated.framework
+${BUILT_PRODUCTS_DIR}/RxCocoa/RxCocoa.framework
+${BUILT_PRODUCTS_DIR}/RxCoreLocation/RxCoreLocation.framework
+${BUILT_PRODUCTS_DIR}/RxDataSources/RxDataSources.framework
+${BUILT_PRODUCTS_DIR}/RxGesture/RxGesture.framework
+${BUILT_PRODUCTS_DIR}/RxKeyboard/RxKeyboard.framework
+${BUILT_PRODUCTS_DIR}/RxOptional/RxOptional.framework
+${BUILT_PRODUCTS_DIR}/RxRelay/RxRelay.framework
+${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework
+${BUILT_PRODUCTS_DIR}/TAReusableView/TAReusableView.framework
+${BUILT_PRODUCTS_DIR}/ObjcExceptionBridging/ObjcExceptionBridging.framework
+${BUILT_PRODUCTS_DIR}/XCGLogger/XCGLogger.framework

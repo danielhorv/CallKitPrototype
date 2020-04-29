@@ -1,0 +1,6 @@
+framework module TAReusableView {
+  umbrella header "TAReusableView-umbrella.h"
+
+  export *
+  module * { export * }
+}
