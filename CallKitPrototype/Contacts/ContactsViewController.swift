@@ -55,8 +55,6 @@ class ContactsViewController: UIViewController, View {
     
     private var dataSource: RxTableViewSectionedAnimatedDataSource<ContactSectionModel>?
     
-    private let callDirectorySyncController = CallDirectorySyncController()
-
     private let reloadBarButtonItem = UIBarButtonItem(barButtonSystemItem: .refresh, target: nil, action: nil)
     
     override func viewDidLoad() {
@@ -163,6 +161,7 @@ class ContactsReactor: Reactor {
         
         switch mutation {
         case .setContacts(let contacts):
+            print("allContacts: ", contacts.count)
             newState.contacts = contacts
         }
         

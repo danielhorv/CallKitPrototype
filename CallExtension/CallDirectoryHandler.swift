@@ -14,7 +14,8 @@ import CoreData
 class CallDirectoryHandler: CXCallDirectoryProvider {
 
 //    private lazy var coreDataStore = CoreDataStore()
-    
+    private let coreDataStore = CoreDataStore()
+
     override init() {
         super.init()
     }
@@ -38,36 +39,84 @@ class CallDirectoryHandler: CXCallDirectoryProvider {
 //            addAllIdentificationPhoneNumbers(to: context)
 //        }
 
-        let coreDataStore = CoreDataStore()
+        switch coreDataStore.callDirectoryOperation {
+        case .delete:
+            coreDataStore.container.viewContext.perform({ [weak self] in
+                self?.loadDeletedContactsFromCoreData(for: context)
+            })
+            
+        case .update:
+            coreDataStore.container.viewContext.perform({ [weak self] in
+                self?.loadUpdatedContactsFromCoreData(for: context)
+            })
 
-        coreDataStore.container.viewContext.perform({ [weak self] in
-            do {
-                let contacts = try coreDataStore.loadUnsyncedContacts()
-                try contacts.forEach {
-                    self?.remove(contact: $0, from: context)
-                    self?.add(contact: $0, to: context)
-                    try coreDataStore.markSynced(contact: $0)
-                    print("synced: ",$0.firstName + " " + $0.lastName)
-                }
-
-                context.completeRequest()
-
-            } catch {
-                print(error)
-                context.completeRequest()
-
-            }
-        })
+        case .loadAll:
+            coreDataStore.container.viewContext.perform({ [weak self] in
+                self?.loadUnSyncedContactsFromCoreData(for: context)
+            })
+        }
     }
-
+    
+    private func loadUpdatedContactsFromCoreData(for context: CXCallDirectoryExtensionContext) {
+        do {
+            let contacts = try coreDataStore.loadUpdatedContacts()
+            print("UpdatedContacts")
+            print("batchSize: ", contacts.count)
+            try contacts.forEach {
+                remove(contact: $0, from: context)
+                add(contact: $0, to: context)
+                try coreDataStore.markSynced(contact: $0)
+            }
+            context.completeRequest()
+            
+        } catch {
+            print(error)
+            context.completeRequest()
+        }
+    }
+    
+    private func loadDeletedContactsFromCoreData(for context: CXCallDirectoryExtensionContext) {
+        do {
+            let contacts = try coreDataStore.loadDeletedContacts()
+            print("batchSize: ", contacts.count)
+            try contacts.forEach {
+                remove(contact: $0, from: context)
+                try coreDataStore.delete(contact: $0)
+            }
+            context.completeRequest()
+            
+        } catch {
+            print(error)
+            context.completeRequest()
+        }
+    }
+    
+    private func loadUnSyncedContactsFromCoreData(for context: CXCallDirectoryExtensionContext) {
+        do {
+            let contacts = try coreDataStore.loadUnsyncedContacts()
+            try contacts.forEach {
+                remove(contact: $0, from: context)
+                add(contact: $0, to: context)
+                try coreDataStore.markSynced(contact: $0)
+                print("synced: ",$0.firstName + " " + $0.lastName)
+            }
+            
+            context.completeRequest()
+            
+        } catch {
+            print(error)
+            context.completeRequest()
+        }
+    }
+    
     private func remove(contact: Contact, from context: CXCallDirectoryExtensionContext) {
         if let mobileNumber = contact.callDirectoryMobileNumber {
-            context.removeBlockingEntry(withPhoneNumber: mobileNumber)
+            context.removeIdentificationEntry(withPhoneNumber: mobileNumber)
         }
     }
     
     private func add(contact: Contact, to context: CXCallDirectoryExtensionContext) {
-        let displayName = String(format: "%@ %@", contact.firstName, contact.lastName)
+        let displayName = String(format: "%@ %@ %@", contact.firstName, contact.lastName, contact.id) 
         
         print("add", displayName)
         

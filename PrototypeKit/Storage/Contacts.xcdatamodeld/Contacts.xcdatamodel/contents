@@ -6,6 +6,9 @@
         <attribute name="street" optional="YES" attributeType="String"/>
         <attribute name="zipCode" optional="YES" attributeType="String"/>
     </entity>
+    <entity name="CDCallDirectoryOperation" representedClassName="CDCallDirectoryOperation" syncable="YES" codeGenerationType="class">
+        <attribute name="rawValue" optional="YES" attributeType="String"/>
+    </entity>
     <entity name="CDContact" representedClassName="CDContact" syncable="YES" codeGenerationType="class">
         <attribute name="department" optional="YES" attributeType="String"/>
         <attribute name="email" optional="YES" attributeType="String"/>
@@ -14,13 +17,14 @@
         <attribute name="lastName" optional="YES" attributeType="String"/>
         <attribute name="mobileNumber" optional="YES" attributeType="String"/>
         <attribute name="phoneNumber" optional="YES" attributeType="String"/>
-        <attribute name="statusRaw" optional="YES" attributeType="String"/>
+        <attribute name="statusRaw" attributeType="String"/>
         <attribute name="syncedWithCallDirectory" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="title" optional="YES" attributeType="String"/>
         <relationship name="address" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CDAddress"/>
     </entity>
     <elements>
-        <element name="CDContact" positionX="-63" positionY="-18" width="128" height="208"/>
         <element name="CDAddress" positionX="-54" positionY="63" width="128" height="103"/>
+        <element name="CDContact" positionX="-63" positionY="-18" width="128" height="208"/>
+        <element name="CDCallDirectoryOperation" positionX="-54" positionY="72" width="128" height="58"/>
     </elements>
 </model>

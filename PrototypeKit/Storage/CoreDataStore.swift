@@ -23,20 +23,54 @@ extension CoreFetchable where Self: NSManagedObject {
 
 private class CoreDataBundleHelper { }
 
+public enum CallDirectoryOperation: String {
+    case loadAll
+    case update
+    case delete
+}
+
 public protocol PersistentStore {
     var contacts: [Contact] { get }
-    var allContactCount: Int { get }
-    var unSyncedContactCount: Int { get}
+    var numberOfContacts: Int { get }
+    var numberOfUnSyncedContacts: Int { get }
+    var numberOfUpdatedContacts: Int { get }
+    var numberOfDeletedContacts: Int { get }
+    var callDirectoryOperation: CallDirectoryOperation { get set }
 }
 
 extension PersistentStore {
     public var unSyncedContactsPercentage: CGFloat {
-        return (CGFloat(unSyncedContactCount) / CGFloat(allContactCount)) * 100
+        return (1 - (CGFloat(numberOfUnSyncedContacts) / CGFloat(numberOfContacts))) * 100
     }
 }
 
 extension CoreDataStore: PersistentStore {
-    public var allContactCount: Int {
+
+    public var callDirectoryOperation: CallDirectoryOperation {
+        get {
+            let request: NSFetchRequest<CDCallDirectoryOperation> = CDCallDirectoryOperation.fetchRequest()
+            if let rawValue = try? container.viewContext.fetch(request).first?.rawValue, let operation = CallDirectoryOperation(rawValue: rawValue) {
+                return operation
+            } else {
+                return .loadAll
+            }
+        }
+        set {
+//            container.viewContext.perform {
+                let request: NSFetchRequest<CDCallDirectoryOperation> = CDCallDirectoryOperation.fetchRequest()
+                if let storedOperation = try? self.container.viewContext.fetch(request).first {
+                    storedOperation.rawValue = newValue.rawValue
+                } else {
+                    let cdCallDirectoryOperation = CDCallDirectoryOperation(context: self.container.viewContext)
+                    cdCallDirectoryOperation.rawValue = newValue.rawValue
+                }
+
+                try? self.container.viewContext.save()
+//            }
+        }
+    }
+    
+    public var numberOfContacts: Int {
         let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
         do {
             return try container.viewContext.count(for: request)
@@ -46,9 +80,35 @@ extension CoreDataStore: PersistentStore {
         }
     }
     
-    public var unSyncedContactCount: Int {
+    public var numberOfUpdatedContacts: Int {
         let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
-        request.predicate = NSPredicate(format: "syncedWithCallDirectory==false")
+        request.predicate = NSPredicate(format: "statusRaw == %@ AND syncedWithCallDirectory==false", ContactStatus.updated.rawValue)
+
+        do {
+            return try container.viewContext.count(for: request)
+        } catch {
+            print(error)
+            return 0
+        }
+    }
+    
+    public var numberOfDeletedContacts: Int {
+        let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
+        request.predicate = NSPredicate(format: "statusRaw == %@ AND syncedWithCallDirectory==false", ContactStatus.deleted.rawValue)
+
+        do {
+            return try container.viewContext.count(for: request)
+        } catch {
+            print(error)
+            return 0
+        }
+    }
+    
+    public var numberOfUnSyncedContacts: Int {
+        let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
+//        request.predicate = NSPredicate(format: "syncedWithCallDirectory==false")
+        request.predicate = NSPredicate(format: "statusRaw == %@ AND syncedWithCallDirectory==false", ContactStatus.created.rawValue)
+
         do {
             return try container.viewContext.count(for: request)
         } catch {
@@ -70,8 +130,6 @@ public class CoreDataStore: NSObject {
             return []
         }
     }
-    
-    
     
     public lazy var container: NSPersistentContainer = {
         let bundle = Bundle(for: CoreDataBundleHelper.self)
@@ -139,8 +197,32 @@ public class CoreDataStore: NSObject {
         request.fetchBatchSize = 1000
         request.fetchLimit = 1000
         request.sortDescriptors = [NSSortDescriptor(key: "mobileNumber", ascending: true)]
-        request.predicate = NSPredicate(format: "syncedWithCallDirectory==false")
+//        request.predicate = NSPredicate(format: "syncedWithCallDirectory==false")
+        request.predicate = NSPredicate(format: "statusRaw == %@ AND syncedWithCallDirectory==false", ContactStatus.created.rawValue)
+
     
+        return try container.viewContext.fetch(request)
+            .map { Contact(cdContact: $0) }
+    }
+    
+    public func loadUpdatedContacts() throws -> [Contact] {
+        let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
+        request.fetchBatchSize = 1000
+        request.fetchLimit = 1000
+        request.sortDescriptors = [NSSortDescriptor(key: "mobileNumber", ascending: true)]
+        request.predicate = NSPredicate(format: "statusRaw == %@ AND syncedWithCallDirectory==false", ContactStatus.updated.rawValue)
+
+        return try container.viewContext.fetch(request)
+            .map { Contact(cdContact: $0) }
+    }
+    
+    public func loadDeletedContacts() throws -> [Contact] {
+        let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
+        request.fetchBatchSize = 1000
+        request.fetchLimit = 1000
+        request.sortDescriptors = [NSSortDescriptor(key: "mobileNumber", ascending: true)]
+        request.predicate = NSPredicate(format: "statusRaw == %@ AND syncedWithCallDirectory==false", ContactStatus.deleted.rawValue)
+
         return try container.viewContext.fetch(request)
             .map { Contact(cdContact: $0) }
     }
@@ -193,6 +275,13 @@ public class CoreDataStore: NSObject {
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: request)
         
         try container.persistentStoreCoordinator.execute(deleteRequest, with: container.newBackgroundContext())
+    }
+    
+    public func delete(contact: Contact) throws {
+        if let cdContact = try? object(for: CDContact.self, with: NSPredicate(format: "id==%@", contact.id), in: container.viewContext) {
+            container.viewContext.delete(cdContact)
+            try container.viewContext.save()
+        }
     }
     
     public func storeOrUpdate(contact: Contact) throws {

@@ -49,7 +49,6 @@ public class MockContactsProvider: ContactsProviderProtocol {
     private func initialFetchAndStore() {
         _ = fetchContacts()
             .asObservable()
-//            .debug()
             .observeOn(MainScheduler.instance)
             .subscribe(onNext: { [weak self] contacts in
                 do {

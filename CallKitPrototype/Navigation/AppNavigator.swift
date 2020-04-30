@@ -12,46 +12,70 @@ import CallKit
 import RxSwift
 
 enum SyncState {
+    case initial
     case inProgress(CGFloat)
+    case delete
+    case update
     case finished
 }
 
 class CallDirectorySyncController: NSObject {
     
-    private let coreDataStore: CoreDataStore = CoreDataStore()
+    private let coreDataStore: CoreDataStore
     
     public var isSynronising: Bool = false
     
-    private var syncStateSubject = PublishSubject<SyncState>()
-//    public var syncState: Observable<Bool>
+    private var syncStateSubject = BehaviorSubject<SyncState>(value: .initial)
     
     public var syncState: Observable<SyncState> {
         return syncStateSubject.asObservable()
     }
     
-    func sync() {
-        print("Sync started")
+    public init(coreDataStore: CoreDataStore) {
+        self.coreDataStore = coreDataStore
+        
+        print("numberOfDeletedContacts: ", coreDataStore.numberOfDeletedContacts)
+        print("numberOfUpdatedContacts: ", coreDataStore.numberOfUpdatedContacts)
+    }
+    
+    public func sync() {
         CXCallDirectoryManager.sharedInstance.reloadExtension(withIdentifier: "com.dhorvath.CallKitPrototype.CallExtension", completionHandler: { [weak self] error in
-            print("inClosure")
-            guard error == nil else {
-                print("error: ", error?.localizedDescription ?? "")
-                return
-            }
-            
-            do {
-                let batchCount = try self?.coreDataStore.loadUnsyncedContacts().count ?? 0
-                if batchCount > 0 {
-                    self?.sync()
-                    print("nextBatch", batchCount)
-                    self?.syncStateSubject.onNext(.inProgress(self?.coreDataStore.unSyncedContactsPercentage ?? 0))
-                } else {
-                    self?.syncStateSubject.onNext(.finished)
-                    print("all contact synced")
-                }
-            } catch {
-                print("Error reloading extension: \(error.localizedDescription)")
+            DispatchQueue.main.async {
+                self?.handleExtensionReloadCompletion(with: error)
             }
         })
+    }
+    
+    private func handleExtensionReloadCompletion(with error: Error?) {
+        guard error == nil else {
+            syncStateSubject.onError(error!)
+            print("error: ", error?.localizedDescription ?? "")
+            return
+        }
+        
+        do {
+            if coreDataStore.numberOfUnSyncedContacts > 0 {
+                coreDataStore.callDirectoryOperation = .loadAll
+                syncStateSubject.onNext(.inProgress(coreDataStore.unSyncedContactsPercentage))
+                self.sync()
+    
+            } else if coreDataStore.numberOfUpdatedContacts > 0 {
+                coreDataStore.callDirectoryOperation = .update
+                syncStateSubject.onNext(.update)
+                self.sync()
+
+            } else if coreDataStore.numberOfDeletedContacts > 0 {
+                coreDataStore.callDirectoryOperation = .delete
+                syncStateSubject.onNext(.delete)
+                self.sync()
+                
+            } else {
+                // Everithing is fine!
+                syncStateSubject.onNext(.finished)
+            }
+        } catch {
+            syncStateSubject.onError(error)
+        }
     }
 }
 
@@ -68,7 +92,7 @@ class AppNavigator: Navigator, Flow {
     
     private lazy var contactsProvider: ContactsProviderProtocol = MockContactsProvider(coreDataStore:  coreDataStore)
     
-    private let callDirectorySyncController = CallDirectorySyncController()
+    private lazy var callDirectorySyncController = CallDirectorySyncController(coreDataStore: coreDataStore)
     
     init(appDelegate: AppDelegate) {
         self.appDelegate = appDelegate
@@ -80,7 +104,10 @@ class AppNavigator: Navigator, Flow {
         _ = callDirectorySyncController.syncState
             .debug()
             .subscribe()
-//        callDirectorySyncController.sync()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
+            self?.callDirectorySyncController.sync()
+        }
+        
         
         
         return nil
