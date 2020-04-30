@@ -8,31 +8,71 @@
 
 import Foundation
 import RxSwift
+import CoreData
+
 
 public protocol ContactsProviderProtocol {
+    var contacts: Observable<[Contact]> { get }
     func fetchContacts() -> Single<[Contact]>
 }
 
 public class MockContactsProvider: ContactsProviderProtocol {
     
-    public init() {} 
+    private let coreDataStore: CoreDataStore = CoreDataStore()
+
+    private lazy var contactsSubject = BehaviorSubject<[Contact]>(value: coreDataStore.contacts)
+    
+    public var contacts: Observable<[Contact]> {
+        return contactsSubject.asObservable()
+    }
+    
+    public init() {
+//        initialFetchAndStore()
+        
+//        try? coreDataStore.resetSyncState()
+        
+    }
+    
+    private func initialFetchAndStore() {
+        _ = fetchContacts()
+            .asObservable()
+//            .debug()
+            .observeOn(MainScheduler.instance)
+            .subscribe(onNext: { [weak self] contacts in
+                do {
+                    try contacts.forEach { try self?.coreDataStore.storeOrUpdate(contact: $0) }
+                    self?.contactsSubject.onNext(self?.coreDataStore.contacts ?? [])
+                } catch {
+                    print(error)
+                }
+            })
+    }
     
     public func fetchContacts() -> Single<[Contact]> {
+        let bundle = Bundle(for: BundleHelper.self)
 
-        let request = URLRequest(url: URL(string: "https://my.api.mockaroo.com/phonebook.json?key=1c0fae70")!)
+        let url = bundle.url(forResource: "generated", withExtension: "json")!
+        let data = try! Data(contentsOf: url)
+        let contacts = try! JSONDecoder().decode([Contact].self, from: data)
+
+        return .just(contacts)
         
-        return Single.create { single in
-            URLSession.shared.dataTask(with: request) { (data, _, error) in
-                if let error = error {
-                    single(.error(error))
-                } else if let data = data {
-                    single(.success((try? JSONDecoder().decode([Contact].self, from: data)) ?? []))
-                } else {
-                    single(.success([]))
-                }
-            }.resume()
-            
-            return Disposables.create()
-        }
+//        let request = URLRequest(url: URL(string: "https://my.api.mockaroo.com/phonebook.json?key=1c0fae70")!)
+//
+//        return Single.create { single in
+//            URLSession.shared.dataTask(with: request) { (data, _, error) in
+//                if let error = error {
+//                    single(.error(error))
+//                } else if let data = data {
+//                    single(.success((try? JSONDecoder().decode([Contact].self, from: data)) ?? []))
+//                } else {
+//                    single(.success([]))
+//                }
+//            }.resume()
+//
+//            return Disposables.create()
+//        }
     }
 }
+
+private class BundleHelper {}

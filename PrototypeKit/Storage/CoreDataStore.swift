@@ -21,23 +21,13 @@ extension CoreFetchable where Self: NSManagedObject {
     }
 }
 
-public class DictatesPersistentContainer: NSPersistentContainer {
-//    override public class func defaultDirectoryURL() -> URL {
-//        return super.defaultDirectoryURL().appendingPathComponent("contacts", isDirectory: true)
-//    }
-}
-
 private class CoreDataBundleHelper { }
 
 public class CoreDataStore: NSObject {
 
-    let container: NSPersistentContainer
+//    public static let shared = CoreDataStore()
     
-    private lazy var contactsSubject = BehaviorSubject<[Contact]>(value: contacts)
-
-    public var contactsObservable: Observable<[Contact]> {
-        return contactsSubject.asObservable()
-    }
+//    public let container: NSPersistentContainer
     
     public var contacts: [Contact] {
         do {
@@ -50,18 +40,72 @@ public class CoreDataStore: NSObject {
         }
     }
     
-    public init(persistentContainer: NSPersistentContainer = DictatesPersistentContainer(name: "Contacts")) {
-        container = persistentContainer
-        container.loadPersistentStores { (_, error) in
+    public lazy var container: NSPersistentContainer = {
+        let bundle = Bundle(for: CoreDataBundleHelper.self)
+        let group = "group.com.dhorvath.CallKitPrototype"
+        let fileName = "Contacts.sqlite"
+        
+        let modelURL = bundle.url(forResource: "Contacts", withExtension: "momd")!
+        let managedObjectModel = NSManagedObjectModel(contentsOf: modelURL)
+        
+        guard let baseURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group) else {
+            fatalError("Error creating base URL for \(group)")
+        }
+        
+        let storeUrl = baseURL.appendingPathComponent(fileName)
+        
+        let container = NSPersistentContainer(name: "Contacts", managedObjectModel: managedObjectModel!)
+        
+        let description = NSPersistentStoreDescription()
+        description.url = storeUrl
+        container.persistentStoreDescriptions = [description]
+        
+        container.loadPersistentStores { _, error in
             print(error.debugDescription)
         }
+        
+        return container
+    }()
+    
+    public override init() {
+        super.init()
     }
+//    public override init() {
+//        let bundle = Bundle(for: CoreDataBundleHelper.self)
+//        let group = "group.com.dhorvath.CallKitPrototype"
+//        let fileName = "Contacts.sqlite"
+//
+//        let modelURL = bundle.url(forResource: "Contacts", withExtension: "momd")!
+//        let managedObjectModel = NSManagedObjectModel(contentsOf: modelURL)
+////        let container = NSPersistentContainer(name: "Contacts", managedObjectModel: managedObjectModel!)
+//
+//        guard let baseURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group) else {
+//            fatalError("Error creating base URL for \(group)")
+//        }
+//
+//        let storeUrl = baseURL.appendingPathComponent(fileName)
+//
+//        let container = NSPersistentContainer(name: "Contacts", managedObjectModel: managedObjectModel!)
+//
+//        let description = NSPersistentStoreDescription()
+//        description.url = storeUrl
+//        container.persistentStoreDescriptions = [description]
+//
+//        container.loadPersistentStores { _, error in
+//            print(error.debugDescription)
+//        }
+//
+//        self.container = container
+//        super.init()
+//
+//        print("contactNumber: ", contacts.count)
+//    }
 
     public func loadUnsyncedContacts() throws -> [Contact] {
         let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
-//        request.fetchLimit = 50
-        
-        request.predicate = NSPredicate(format: "syncedWithCallDirectory==false")
+        request.fetchBatchSize = 4000
+        request.fetchLimit = 4000
+//        request.predicate = NSPredicate(format: "syncedWithCallDirectory==false")
     
         return try container.viewContext.fetch(request)
             .map { Contact(cdContact: $0) }
@@ -76,6 +120,14 @@ public class CoreDataStore: NSObject {
             
             try container.viewContext.save()
         }
+    }
+    
+    public func resetSyncState() throws {
+        let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
+        
+        let contacts = try container.viewContext.fetch(request)
+        contacts.forEach { $0.syncedWithCallDirectory = false }
+        try container.viewContext.save()
     }
     
     public func object<T: NSManagedObject>(for type: T.Type, with predicate: NSPredicate, in context: NSManagedObjectContext) throws -> T? {

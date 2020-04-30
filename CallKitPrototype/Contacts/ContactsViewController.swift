@@ -13,6 +13,7 @@ import RxCocoa
 import ReactorKit
 import RxDataSources
 import PrototypeKit
+import CallKit
 
 struct ContactSectionModel {
     let header: String
@@ -54,9 +55,13 @@ class ContactsViewController: UIViewController, View {
     
     private var dataSource: RxTableViewSectionedAnimatedDataSource<ContactSectionModel>?
     
+    private let reloadBarButtonItem = UIBarButtonItem(barButtonSystemItem: .refresh, target: nil, action: nil)
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
+        
+        navigationItem.rightBarButtonItem = reloadBarButtonItem
     }
     
     private func setupView() {
@@ -85,14 +90,22 @@ class ContactsViewController: UIViewController, View {
 
         self.dataSource = dataSource
         
+        reloadBarButtonItem.rx.tap
+            .subscribe(onNext: { [weak self] in
+                CXCallDirectoryManager.sharedInstance.reloadExtension(withIdentifier: "com.dhorvath.CallKitPrototype.CallExtension", completionHandler: { (error) in
+                    if let error = error {
+                        print("Error reloading extension: \(error.localizedDescription)")
+                    }
+                })
+            })
+            .disposed(by: disposeBag)
+        
         reactor.state.map { $0.contacts }
             .distinctUntilChanged()
             .map { contacts in
-                var dict = Dictionary(grouping: contacts) { $0.firstName.first }
-                dict.sort(by: { $0.key?.lowercased() ?? "" < $1.key?.lowercased() ?? "" })
+                let dict = Dictionary(grouping: contacts) { $0.firstName.first }.sorted(by: { $0.key?.lowercased() ?? "" < $1.key?.lowercased() ?? "" })
                 return dict.map { ContactSectionModel(header: String($0.key!), items: $0.value) }
             }
-
             .bind(to: tableView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
     }
@@ -100,7 +113,6 @@ class ContactsViewController: UIViewController, View {
 class ContactsReactor: Reactor {
     
     enum Action {
-        case loadContacts
     }
     
     enum Mutation {
@@ -119,19 +131,23 @@ class ContactsReactor: Reactor {
         self.contactsProvider = contactsProvider
     }
     
-    func transform(action: Observable<Action>) -> Observable<Action> {
-        action.startWith(.loadContacts)
+    func transform(mutation: Observable<Mutation>) -> Observable<Mutation> {
+        let contactObservable = contactsProvider.contacts
+            .distinctUntilChanged()
+            .map { Mutation.setContacts($0) }
+        
+        return .merge(mutation, contactObservable)
     }
     
-    func mutate(action: ContactsReactor.Action) -> Observable<ContactsReactor.Mutation> {
-        switch action {
-        case .loadContacts:
-            return contactsProvider.fetchContacts()
-                .asObservable()
-                .map { Mutation.setContacts($0) }
-        }
-    }
-    
+//    func mutate(action: ContactsReactor.Action) -> Observable<ContactsReactor.Mutation> {
+//        switch action {
+//        case .loadContacts:
+//            return contactsProvider.fetchContacts()
+//                .asObservable()
+//                .map { Mutation.setContacts($0) }
+//        }
+//    }
+//
     func reduce(state: State, mutation: Mutation) -> State {
         var newState = state
         

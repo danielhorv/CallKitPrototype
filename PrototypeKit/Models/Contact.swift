@@ -89,10 +89,28 @@ extension Contact: Decodable, Equatable {
         phoneNumber = try container.decodeIfPresent(String.self, forKey: .phoneNumber)
         mobileNumber = try container.decodeIfPresent(String.self, forKey: .mobileNumber)
         email = try container.decodeIfPresent(String.self, forKey: .email)
-        address = try container.decode(Address.self, forKey: .address)
+        address = try container.decodeIfPresent(Address.self, forKey: .address)
         status = try {
-            let rawValue = try container.decode(String.self, forKey: .status)
-            return ContactStatus(rawValue: rawValue) ?? .created
+            if let rawValue = try container.decodeIfPresent(String.self, forKey: .status) {
+                return ContactStatus(rawValue: rawValue) ?? .created
+            } else {
+                return .created
+            }
         }()
     }
 }
+
+import CallKit
+
+extension Contact {
+    
+    public var callDirectoryPhoneNumber: CXCallDirectoryPhoneNumber {
+        
+//        guard let phoneNumber = phoneNumber else {
+//            fatalError("PhoneNumber convert to Int64 error")
+//        }
+//        print(callDirectoryPhoneNumber)
+        return Int64(13031565782)
+    }
+}
+
