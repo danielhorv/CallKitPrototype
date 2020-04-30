@@ -23,11 +23,13 @@ extension CoreFetchable where Self: NSManagedObject {
 
 private class CoreDataBundleHelper { }
 
-public class CoreDataStore: NSObject {
-
-//    public static let shared = CoreDataStore()
+public protocol PersistentStore {
+    var contacts: [Contact] { get }
     
-//    public let container: NSPersistentContainer
+    
+}
+
+public class CoreDataStore: NSObject {
     
     public var contacts: [Contact] {
         do {
@@ -103,8 +105,9 @@ public class CoreDataStore: NSObject {
 
     public func loadUnsyncedContacts() throws -> [Contact] {
         let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
-        request.fetchBatchSize = 3000
-        request.fetchLimit = 3000
+        request.fetchBatchSize = 1000
+        request.fetchLimit = 1000
+        request.sortDescriptors = [NSSortDescriptor(key: "mobileNumber", ascending: true)]
         request.predicate = NSPredicate(format: "syncedWithCallDirectory==false")
     
         return try container.viewContext.fetch(request)

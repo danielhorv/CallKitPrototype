@@ -104,13 +104,26 @@ import CallKit
 
 extension Contact {
     
-    public var callDirectoryPhoneNumber: CXCallDirectoryPhoneNumber {
+    public var callDirectoryMobileNumber: CXCallDirectoryPhoneNumber? {
+        guard let mobileNumber = mobileNumber?.sanitizedPhoneNumberString(), let mobileNumberDigit = Int64(mobileNumber) else {
+            return nil
+        }
         
-//        guard let phoneNumber = phoneNumber else {
-//            fatalError("PhoneNumber convert to Int64 error")
-//        }
-//        print(callDirectoryPhoneNumber)
-        return Int64(13031565782)
+        return mobileNumberDigit
+    }
+    
+    public var callDirectoryPhoneNumber: CXCallDirectoryPhoneNumber? {
+        guard let phoneNumber = phoneNumber?.sanitizedPhoneNumberString(), let phoneNumberDigit = Int64(phoneNumber) else {
+            return nil
+        }
+        
+        return phoneNumberDigit
     }
 }
 
+extension String {
+    ///  Deletes characters that aren't decimal digits
+    func sanitizedPhoneNumberString() -> String? {
+        return String(self.filter { String($0).rangeOfCharacter(from: CharacterSet.decimalDigits) != nil })
+    }
+}

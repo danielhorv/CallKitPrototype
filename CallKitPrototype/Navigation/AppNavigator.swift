@@ -9,17 +9,26 @@
 import UIKit
 import PrototypeKit
 import CallKit
+import RxSwift
 
 class CallDirectorySyncController: NSObject {
     
     private let coreDataStore: CoreDataStore = CoreDataStore()
     
+    public var isSynronising: Bool = false
+    
+    private var syncProgress = PublishSubject<CGFloat>()
+//    public var syncState: Observable<Bool>
+    
     func sync() {
+        isSynronising = true
+        
         print("Sync started")
         CXCallDirectoryManager.sharedInstance.reloadExtension(withIdentifier: "com.dhorvath.CallKitPrototype.CallExtension", completionHandler: { [weak self] error in
             print("inClosure")
             guard error == nil else {
                 print("error: ", error?.localizedDescription ?? "")
+                self?.isSynronising = false
                 return
             }
             
@@ -32,6 +41,7 @@ class CallDirectorySyncController: NSObject {
                     print("all contact synced")
                 }
             } catch {
+                self?.isSynronising = false
                 print("Error reloading extension: \(error.localizedDescription)")
             }
         })
@@ -57,7 +67,12 @@ class AppNavigator: Navigator, Flow {
     
     func start(on parent: Flow?) -> UIViewController? {
         navigate(to: .contacts)
-        callDirectorySyncController.sync()
+        
+        contactsProvider
+        
+//        callDirectorySyncController.sync()
+        
+        
         return nil
     }
     

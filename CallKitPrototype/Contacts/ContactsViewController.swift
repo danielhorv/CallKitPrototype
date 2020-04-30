@@ -92,13 +92,20 @@ class ContactsViewController: UIViewController, View {
 
         self.dataSource = dataSource
         
+//        reactor.state.map { $0.contacts }
+//            .distinctUntilChanged()
+//            .subscribe(onNext: { (contacts) in
+//                print(contacts.map { $0.callDirectoryMobileNumber })
+//            })
+//            .disposed(by: disposeBag)
+        
         reloadBarButtonItem.rx.tap
             .subscribe(onNext: { [weak self] in
-//                CXCallDirectoryManager.sharedInstance.reloadExtension(withIdentifier: "com.dhorvath.CallKitPrototype.CallExtension", completionHandler: { (error) in
-//                    if let error = error {
-//                        print("Error reloading extension: \(error.localizedDescription)")
-//                    }
-//                })
+                CXCallDirectoryManager.sharedInstance.reloadExtension(withIdentifier: "com.dhorvath.CallKitPrototype.CallExtension", completionHandler: { (error) in
+                    if let error = error {
+                        print("Error reloading extension: \(error.localizedDescription)")
+                    }
+                })
 //                self?.callDirectorySyncController.sync()
             })
             .disposed(by: disposeBag)

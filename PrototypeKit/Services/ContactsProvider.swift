@@ -13,6 +13,7 @@ import CoreData
 
 public protocol ContactsProviderProtocol {
     var contacts: Observable<[Contact]> { get }
+    var callDirectoryUpdateAvailable: Observable<Bool> { get }
     func fetchContacts() -> Single<[Contact]>
 }
 
@@ -26,10 +27,20 @@ public class MockContactsProvider: ContactsProviderProtocol {
         return contactsSubject.asObservable()
     }
     
+    private lazy var updateSubject = PublishSubject<Bool>()
+    
+    public var callDirectoryUpdateAvailable: Observable<Bool> {
+        return contacts
+            .distinctUntilChanged()
+            .map { _ in true }
+    }
+    
     public init() {
-//        initialFetchAndStore()
-        
-        try? coreDataStore.resetSyncState()
+        if coreDataStore.contacts.isEmpty {
+            initialFetchAndStore()
+        }
+    
+//        try? coreDataStore.resetSyncState()
         
     }
     
@@ -51,7 +62,7 @@ public class MockContactsProvider: ContactsProviderProtocol {
     public func fetchContacts() -> Single<[Contact]> {
         let bundle = Bundle(for: BundleHelper.self)
 
-        let url = bundle.url(forResource: "generated", withExtension: "json")!
+        let url = bundle.url(forResource: "generated_30000", withExtension: "json")!
         let data = try! Data(contentsOf: url)
         let contacts = try! JSONDecoder().decode([Contact].self, from: data)
 

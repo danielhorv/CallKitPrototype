@@ -17,7 +17,6 @@
 		9E0071322459F283002CEF36 /* CallExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 9E00712B2459F283002CEF36 /* CallExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9E0071392459FA05002CEF36 /* PrototypeKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E03894B2459DB750093E67C /* PrototypeKit.framework */; };
 		9E00713A2459FA05002CEF36 /* PrototypeKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9E03894B2459DB750093E67C /* PrototypeKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		9E007141245A0252002CEF36 /* generated.json in Resources */ = {isa = PBXBuildFile; fileRef = 9E007140245A0252002CEF36 /* generated.json */; };
 		9E03892C2459DA1C0093E67C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E03892B2459DA1C0093E67C /* AppDelegate.swift */; };
 		9E0389352459DA200093E67C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E0389342459DA200093E67C /* Assets.xcassets */; };
 		9E0389382459DA200093E67C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9E0389362459DA200093E67C /* LaunchScreen.storyboard */; };
@@ -27,6 +26,9 @@
 		9E0389522459DB750093E67C /* PrototypeKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E03894B2459DB750093E67C /* PrototypeKit.framework */; };
 		9E0389532459DB750093E67C /* PrototypeKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9E03894B2459DB750093E67C /* PrototypeKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9E0389592459DC5A0093E67C /* AppNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E0389582459DC5A0093E67C /* AppNavigator.swift */; };
+		9E7EE81D245B13C6002CFDC0 /* generated_500.json in Resources */ = {isa = PBXBuildFile; fileRef = 9E7EE81C245B13C6002CFDC0 /* generated_500.json */; };
+		9E7EE81F245B16C5002CFDC0 /* generated_30000.json in Resources */ = {isa = PBXBuildFile; fileRef = 9E7EE81E245B16C5002CFDC0 /* generated_30000.json */; };
+		9ED26D9C245AE0840006A251 /* generated_100000.json in Resources */ = {isa = PBXBuildFile; fileRef = 9ED26D9B245AE0830006A251 /* generated_100000.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -103,7 +105,6 @@
 		9E00712F2459F283002CEF36 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9E0071372459F382002CEF36 /* CallKitPrototype.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CallKitPrototype.entitlements; sourceTree = "<group>"; };
 		9E0071382459F39A002CEF36 /* CallExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CallExtension.entitlements; sourceTree = "<group>"; };
-		9E007140245A0252002CEF36 /* generated.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = generated.json; sourceTree = "<group>"; };
 		9E0389282459DA1C0093E67C /* CallKitPrototype.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CallKitPrototype.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E03892B2459DA1C0093E67C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9E0389342459DA200093E67C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -115,6 +116,9 @@
 		9E03894D2459DB750093E67C /* PrototypeKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrototypeKit.h; sourceTree = "<group>"; };
 		9E03894E2459DB750093E67C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9E0389582459DC5A0093E67C /* AppNavigator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNavigator.swift; sourceTree = "<group>"; };
+		9E7EE81C245B13C6002CFDC0 /* generated_500.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = generated_500.json; sourceTree = "<group>"; };
+		9E7EE81E245B16C5002CFDC0 /* generated_30000.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = generated_30000.json; sourceTree = "<group>"; };
+		9ED26D9B245AE0830006A251 /* generated_100000.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = generated_100000.json; sourceTree = "<group>"; };
 		B10CE8EC499ED68B1AA6F5B0 /* Pods-PrototypeKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PrototypeKit.release.xcconfig"; path = "Target Support Files/Pods-PrototypeKit/Pods-PrototypeKit.release.xcconfig"; sourceTree = "<group>"; };
 		CC47E70C64740AF7EAE7360C /* Pods-CallKitPrototype.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CallKitPrototype.release.xcconfig"; path = "Target Support Files/Pods-CallKitPrototype/Pods-CallKitPrototype.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -179,7 +183,9 @@
 		9E0071242459E3B9002CEF36 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				9E007140245A0252002CEF36 /* generated.json */,
+				9ED26D9B245AE0830006A251 /* generated_100000.json */,
+				9E7EE81E245B16C5002CFDC0 /* generated_30000.json */,
+				9E7EE81C245B13C6002CFDC0 /* generated_500.json */,
 				9E0071252459E3CF002CEF36 /* ContactsProvider.swift */,
 			);
 			path = Services;
@@ -415,7 +421,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9E007141245A0252002CEF36 /* generated.json in Resources */,
+				9E7EE81D245B13C6002CFDC0 /* generated_500.json in Resources */,
+				9ED26D9C245AE0840006A251 /* generated_100000.json in Resources */,
+				9E7EE81F245B16C5002CFDC0 /* generated_30000.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -556,7 +564,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FEADN4X98F;
 				INFOPLIST_FILE = CallExtension/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -578,7 +586,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FEADN4X98F;
 				INFOPLIST_FILE = CallExtension/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -642,7 +650,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -696,7 +704,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -716,7 +724,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FEADN4X98F;
 				INFOPLIST_FILE = "$(SRCROOT)/CallKitPrototype/SupportingFiles/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -738,7 +746,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FEADN4X98F;
 				INFOPLIST_FILE = "$(SRCROOT)/CallKitPrototype/SupportingFiles/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -763,7 +771,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = PrototypeKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -794,7 +802,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = PrototypeKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
