@@ -55,6 +55,8 @@ class ContactsViewController: UIViewController, View {
     
     private var dataSource: RxTableViewSectionedAnimatedDataSource<ContactSectionModel>?
     
+    private let callDirectorySyncController = CallDirectorySyncController()
+
     private let reloadBarButtonItem = UIBarButtonItem(barButtonSystemItem: .refresh, target: nil, action: nil)
     
     override func viewDidLoad() {
@@ -92,11 +94,12 @@ class ContactsViewController: UIViewController, View {
         
         reloadBarButtonItem.rx.tap
             .subscribe(onNext: { [weak self] in
-                CXCallDirectoryManager.sharedInstance.reloadExtension(withIdentifier: "com.dhorvath.CallKitPrototype.CallExtension", completionHandler: { (error) in
-                    if let error = error {
-                        print("Error reloading extension: \(error.localizedDescription)")
-                    }
-                })
+//                CXCallDirectoryManager.sharedInstance.reloadExtension(withIdentifier: "com.dhorvath.CallKitPrototype.CallExtension", completionHandler: { (error) in
+//                    if let error = error {
+//                        print("Error reloading extension: \(error.localizedDescription)")
+//                    }
+//                })
+//                self?.callDirectorySyncController.sync()
             })
             .disposed(by: disposeBag)
         

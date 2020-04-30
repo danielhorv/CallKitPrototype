@@ -55,13 +55,12 @@ class CallDirectoryHandler: CXCallDirectoryProvider {
 //
         coreDataStore.container.viewContext.perform({ [weak self] in
             do {
-
                 let contacts = try coreDataStore.loadUnsyncedContacts()
                 try contacts.forEach {
-                    context.addIdentificationEntry(withNextSequentialPhoneNumber: $0.callDirectoryPhoneNumber, label: $0.firstName + " " + $0.lastName)
-                                    try coreDataStore.markSynced(contact: $0)
+//                    context.addIdentificationEntry(withNextSequentialPhoneNumber: $0.callDirectoryPhoneNumber, label: $0.firstName + " " + $0.lastName)
+                    try coreDataStore.markSynced(contact: $0)
                 }
-                
+
                 context.completeRequest()
 
             } catch {

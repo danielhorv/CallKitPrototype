@@ -103,9 +103,9 @@ public class CoreDataStore: NSObject {
 
     public func loadUnsyncedContacts() throws -> [Contact] {
         let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
-        request.fetchBatchSize = 4000
-        request.fetchLimit = 4000
-//        request.predicate = NSPredicate(format: "syncedWithCallDirectory==false")
+        request.fetchBatchSize = 3000
+        request.fetchLimit = 3000
+        request.predicate = NSPredicate(format: "syncedWithCallDirectory==false")
     
         return try container.viewContext.fetch(request)
             .map { Contact(cdContact: $0) }
@@ -113,7 +113,7 @@ public class CoreDataStore: NSObject {
     
     public func markSynced(contact: Contact) throws {
         let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %d", contact.id)
+        request.predicate = NSPredicate(format: "id==%@", contact.id)
         
         if let cdContact = try container.viewContext.fetch(request).first {
             cdContact.syncedWithCallDirectory = true

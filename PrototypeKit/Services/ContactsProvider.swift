@@ -29,7 +29,7 @@ public class MockContactsProvider: ContactsProviderProtocol {
     public init() {
 //        initialFetchAndStore()
         
-//        try? coreDataStore.resetSyncState()
+        try? coreDataStore.resetSyncState()
         
     }
     
