@@ -25,8 +25,37 @@ private class CoreDataBundleHelper { }
 
 public protocol PersistentStore {
     var contacts: [Contact] { get }
+    var allContactCount: Int { get }
+    var unSyncedContactCount: Int { get}
+}
+
+extension PersistentStore {
+    public var unSyncedContactsPercentage: CGFloat {
+        return (CGFloat(unSyncedContactCount) / CGFloat(allContactCount)) * 100
+    }
+}
+
+extension CoreDataStore: PersistentStore {
+    public var allContactCount: Int {
+        let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
+        do {
+            return try container.viewContext.count(for: request)
+        } catch {
+            print(error)
+            return 0
+        }
+    }
     
-    
+    public var unSyncedContactCount: Int {
+        let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
+        request.predicate = NSPredicate(format: "syncedWithCallDirectory==false")
+        do {
+            return try container.viewContext.count(for: request)
+        } catch {
+            print(error)
+            return 0
+        }
+    }
 }
 
 public class CoreDataStore: NSObject {
@@ -41,6 +70,8 @@ public class CoreDataStore: NSObject {
             return []
         }
     }
+    
+    
     
     public lazy var container: NSPersistentContainer = {
         let bundle = Bundle(for: CoreDataBundleHelper.self)

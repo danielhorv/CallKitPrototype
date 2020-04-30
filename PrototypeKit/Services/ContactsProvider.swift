@@ -19,7 +19,7 @@ public protocol ContactsProviderProtocol {
 
 public class MockContactsProvider: ContactsProviderProtocol {
     
-    private let coreDataStore: CoreDataStore = CoreDataStore()
+    private let coreDataStore: CoreDataStore
 
     private lazy var contactsSubject = BehaviorSubject<[Contact]>(value: coreDataStore.contacts)
     
@@ -35,7 +35,9 @@ public class MockContactsProvider: ContactsProviderProtocol {
             .map { _ in true }
     }
     
-    public init() {
+    public init(coreDataStore: CoreDataStore) {
+        self.coreDataStore = coreDataStore
+        
         if coreDataStore.contacts.isEmpty {
             initialFetchAndStore()
         }

@@ -11,24 +11,30 @@ import PrototypeKit
 import CallKit
 import RxSwift
 
+enum SyncState {
+    case inProgress(CGFloat)
+    case finished
+}
+
 class CallDirectorySyncController: NSObject {
     
     private let coreDataStore: CoreDataStore = CoreDataStore()
     
     public var isSynronising: Bool = false
     
-    private var syncProgress = PublishSubject<CGFloat>()
+    private var syncStateSubject = PublishSubject<SyncState>()
 //    public var syncState: Observable<Bool>
     
+    public var syncState: Observable<SyncState> {
+        return syncStateSubject.asObservable()
+    }
+    
     func sync() {
-        isSynronising = true
-        
         print("Sync started")
         CXCallDirectoryManager.sharedInstance.reloadExtension(withIdentifier: "com.dhorvath.CallKitPrototype.CallExtension", completionHandler: { [weak self] error in
             print("inClosure")
             guard error == nil else {
                 print("error: ", error?.localizedDescription ?? "")
-                self?.isSynronising = false
                 return
             }
             
@@ -37,11 +43,12 @@ class CallDirectorySyncController: NSObject {
                 if batchCount > 0 {
                     self?.sync()
                     print("nextBatch", batchCount)
+                    self?.syncStateSubject.onNext(.inProgress(self?.coreDataStore.unSyncedContactsPercentage ?? 0))
                 } else {
+                    self?.syncStateSubject.onNext(.finished)
                     print("all contact synced")
                 }
             } catch {
-                self?.isSynronising = false
                 print("Error reloading extension: \(error.localizedDescription)")
             }
         })
@@ -57,7 +64,9 @@ class AppNavigator: Navigator, Flow {
     
     weak var appDelegate: AppDelegate?
     
-    private let contactsProvider: ContactsProviderProtocol = MockContactsProvider()
+    private let coreDataStore: CoreDataStore = CoreDataStore()
+    
+    private lazy var contactsProvider: ContactsProviderProtocol = MockContactsProvider(coreDataStore:  coreDataStore)
     
     private let callDirectorySyncController = CallDirectorySyncController()
     
@@ -68,8 +77,9 @@ class AppNavigator: Navigator, Flow {
     func start(on parent: Flow?) -> UIViewController? {
         navigate(to: .contacts)
         
-        contactsProvider
-        
+        _ = callDirectorySyncController.syncState
+            .debug()
+            .subscribe()
 //        callDirectorySyncController.sync()
         
         
