@@ -13,9 +13,9 @@ import RxSwift
 
 enum SyncState {
     case initial
-    case inProgress(CGFloat)
-    case delete
-    case update
+    case syncCreatedContacts(CGFloat)
+    case syncDeletedContacts(CGFloat)
+    case syncUpdatedContacts(CGFloat)
     case finished
 }
 
@@ -34,11 +34,19 @@ class CallDirectorySyncController: NSObject {
     public init(coreDataStore: CoreDataStore) {
         self.coreDataStore = coreDataStore
         
-        print("numberOfDeletedContacts: ", coreDataStore.numberOfDeletedContacts)
-        print("numberOfUpdatedContacts: ", coreDataStore.numberOfUpdatedContacts)
+        print("numberOfDeletedContacts: ", coreDataStore.numberOfUnsyncedDeletedContacts)
+        print("numberOfUpdatedContacts: ", coreDataStore.numberOfUnsyncedUpdatedContacts)
     }
     
-    public func sync() {
+    private var unsyncedContacts: Int = 0
+    
+    public func startSync() {
+        unsyncedContacts = coreDataStore.numberOfUnsyncedContacts
+        print(unsyncedContacts)
+        sync()
+    }
+    
+    private func sync() {
         CXCallDirectoryManager.sharedInstance.reloadExtension(withIdentifier: "com.dhorvath.CallKitPrototype.CallExtension", completionHandler: { [weak self] error in
             DispatchQueue.main.async {
                 self?.handleExtensionReloadCompletion(with: error)
@@ -47,34 +55,32 @@ class CallDirectorySyncController: NSObject {
     }
     
     private func handleExtensionReloadCompletion(with error: Error?) {
+        print(unsyncedContacts)
+        
         guard error == nil else {
             syncStateSubject.onError(error!)
             print("error: ", error?.localizedDescription ?? "")
             return
         }
         
-        do {
-            if coreDataStore.numberOfUnSyncedContacts > 0 {
-                coreDataStore.callDirectoryOperation = .loadAll
-                syncStateSubject.onNext(.inProgress(coreDataStore.unSyncedContactsPercentage))
-                self.sync()
-    
-            } else if coreDataStore.numberOfUpdatedContacts > 0 {
-                coreDataStore.callDirectoryOperation = .update
-                syncStateSubject.onNext(.update)
-                self.sync()
-
-            } else if coreDataStore.numberOfDeletedContacts > 0 {
-                coreDataStore.callDirectoryOperation = .delete
-                syncStateSubject.onNext(.delete)
-                self.sync()
-                
-            } else {
-                // Everithing is fine!
-                syncStateSubject.onNext(.finished)
-            }
-        } catch {
-            syncStateSubject.onError(error)
+        if coreDataStore.numberOfUnsyncedCreatedContacts > 0 {
+            coreDataStore.callDirectoryOperation = .loadAll
+            syncStateSubject.onNext(.syncCreatedContacts(coreDataStore.percentage(for: unsyncedContacts)))
+            self.sync()
+            
+        } else if coreDataStore.numberOfUnsyncedUpdatedContacts > 0 {
+            coreDataStore.callDirectoryOperation = .update
+            syncStateSubject.onNext(.syncUpdatedContacts(coreDataStore.percentage(for: unsyncedContacts)))
+            self.sync()
+            
+        } else if coreDataStore.numberOfUnsyncedDeletedContacts > 0 {
+            coreDataStore.callDirectoryOperation = .delete
+            syncStateSubject.onNext(.syncDeletedContacts(coreDataStore.percentage(for: unsyncedContacts)))
+            self.sync()
+            
+        } else {
+            // Everithing is fine!
+            syncStateSubject.onNext(.finished)
         }
     }
 }
@@ -105,7 +111,7 @@ class AppNavigator: Navigator, Flow {
             .debug()
             .subscribe()
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
-            self?.callDirectorySyncController.sync()
+            self?.callDirectorySyncController.startSync()
         }
         
         

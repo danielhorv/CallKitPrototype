@@ -13,7 +13,6 @@ import CoreData
 
 class CallDirectoryHandler: CXCallDirectoryProvider {
 
-//    private lazy var coreDataStore = CoreDataStore()
     private let coreDataStore = CoreDataStore()
 
     override init() {
@@ -41,25 +40,25 @@ class CallDirectoryHandler: CXCallDirectoryProvider {
 
         switch coreDataStore.callDirectoryOperation {
         case .delete:
-            coreDataStore.container.viewContext.perform({ [weak self] in
+            DispatchQueue.main.async { [weak self] in
                 self?.loadDeletedContactsFromCoreData(for: context)
-            })
+            }
             
         case .update:
-            coreDataStore.container.viewContext.perform({ [weak self] in
+            DispatchQueue.main.async { [weak self] in
                 self?.loadUpdatedContactsFromCoreData(for: context)
-            })
+            }
 
         case .loadAll:
-            coreDataStore.container.viewContext.perform({ [weak self] in
+            DispatchQueue.main.async { [weak self] in
                 self?.loadUnSyncedContactsFromCoreData(for: context)
-            })
+            }
         }
     }
     
     private func loadUpdatedContactsFromCoreData(for context: CXCallDirectoryExtensionContext) {
         do {
-            let contacts = try coreDataStore.loadUpdatedContacts()
+            let contacts = try coreDataStore.loadUnsyncedContacts(for: .updated)
             print("UpdatedContacts")
             print("batchSize: ", contacts.count)
             try contacts.forEach {
@@ -68,7 +67,7 @@ class CallDirectoryHandler: CXCallDirectoryProvider {
                 try coreDataStore.markSynced(contact: $0)
             }
             context.completeRequest()
-            
+
         } catch {
             print(error)
             context.completeRequest()
@@ -77,7 +76,7 @@ class CallDirectoryHandler: CXCallDirectoryProvider {
     
     private func loadDeletedContactsFromCoreData(for context: CXCallDirectoryExtensionContext) {
         do {
-            let contacts = try coreDataStore.loadDeletedContacts()
+            let contacts = try coreDataStore.loadUnsyncedContacts(for: .deleted)
             print("batchSize: ", contacts.count)
             try contacts.forEach {
                 remove(contact: $0, from: context)
@@ -93,7 +92,7 @@ class CallDirectoryHandler: CXCallDirectoryProvider {
     
     private func loadUnSyncedContactsFromCoreData(for context: CXCallDirectoryExtensionContext) {
         do {
-            let contacts = try coreDataStore.loadUnsyncedContacts()
+            let contacts = try coreDataStore.loadUnsyncedContacts(for: .created)
             try contacts.forEach {
                 remove(contact: $0, from: context)
                 add(contact: $0, to: context)
@@ -125,10 +124,10 @@ class CallDirectoryHandler: CXCallDirectoryProvider {
             print("added: ", mobileNumber)
         }
         
-        if let phoneNumber = contact.callDirectoryPhoneNumber {
-            context.addIdentificationEntry(withNextSequentialPhoneNumber: phoneNumber, label: displayName)
-            print("added: ", phoneNumber)
-        }
+//        if let phoneNumber = contact.callDirectoryPhoneNumber {
+//            context.addIdentificationEntry(withNextSequentialPhoneNumber: phoneNumber, label: displayName)
+//            print("added: ", phoneNumber)
+//        }
     }
     
 //    private func addAllBlockingPhoneNumbers(to context: CXCallDirectoryExtensionContext) {
@@ -201,6 +200,6 @@ extension CallDirectoryHandler: CXCallDirectoryExtensionContextDelegate {
         // This may be used to store the error details in a location accessible by the extension's containing app, so that the
         // app may be notified about errors which occured while loading data even if the request to load data was initiated by
         // the user in Settings instead of via the app itself.
+        print(error as NSError)
     }
-
 }

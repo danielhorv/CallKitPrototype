@@ -32,15 +32,23 @@ public enum CallDirectoryOperation: String {
 public protocol PersistentStore {
     var contacts: [Contact] { get }
     var numberOfContacts: Int { get }
-    var numberOfUnSyncedContacts: Int { get }
-    var numberOfUpdatedContacts: Int { get }
-    var numberOfDeletedContacts: Int { get }
+    var numberOfUnsyncedContacts: Int { get }
+    var numberOfUnsyncedCreatedContacts: Int { get }
+    var numberOfUnsyncedUpdatedContacts: Int { get }
+    var numberOfUnsyncedDeletedContacts: Int { get }
     var callDirectoryOperation: CallDirectoryOperation { get set }
 }
 
+public protocol CallDirectoryProviderProtocol {
+    func loadUnsyncedContacts(for status: ContactStatus) throws -> [Contact]
+    func markSynced(contact: Contact) throws
+    func storeOrUpdate(contact: Contact) throws
+    func delete(contact: Contact) throws
+}
+
 extension PersistentStore {
-    public var unSyncedContactsPercentage: CGFloat {
-        return (1 - (CGFloat(numberOfUnSyncedContacts) / CGFloat(numberOfContacts))) * 100
+    public func percentage(for unsyncedContacts: Int) -> CGFloat {
+        return  (1 - (CGFloat(numberOfUnsyncedContacts) / CGFloat(unsyncedContacts))) * 100
     }
 }
 
@@ -56,17 +64,15 @@ extension CoreDataStore: PersistentStore {
             }
         }
         set {
-//            container.viewContext.perform {
-                let request: NSFetchRequest<CDCallDirectoryOperation> = CDCallDirectoryOperation.fetchRequest()
-                if let storedOperation = try? self.container.viewContext.fetch(request).first {
-                    storedOperation.rawValue = newValue.rawValue
-                } else {
-                    let cdCallDirectoryOperation = CDCallDirectoryOperation(context: self.container.viewContext)
-                    cdCallDirectoryOperation.rawValue = newValue.rawValue
-                }
-
-                try? self.container.viewContext.save()
-//            }
+            let request: NSFetchRequest<CDCallDirectoryOperation> = CDCallDirectoryOperation.fetchRequest()
+            if let storedOperation = try? self.container.viewContext.fetch(request).first {
+                storedOperation.rawValue = newValue.rawValue
+            } else {
+                let cdCallDirectoryOperation = CDCallDirectoryOperation(context: self.container.viewContext)
+                cdCallDirectoryOperation.rawValue = newValue.rawValue
+            }
+            
+            try? self.container.viewContext.save()
         }
     }
     
@@ -80,7 +86,19 @@ extension CoreDataStore: PersistentStore {
         }
     }
     
-    public var numberOfUpdatedContacts: Int {
+    public var numberOfUnsyncedContacts: Int {
+        let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
+        request.predicate = NSPredicate(format: "syncedWithCallDirectory==false")
+
+        do {
+            return try container.viewContext.count(for: request)
+        } catch {
+            print(error)
+            return 0
+        }
+    }
+    
+    public var numberOfUnsyncedUpdatedContacts: Int {
         let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
         request.predicate = NSPredicate(format: "statusRaw == %@ AND syncedWithCallDirectory==false", ContactStatus.updated.rawValue)
 
@@ -92,7 +110,7 @@ extension CoreDataStore: PersistentStore {
         }
     }
     
-    public var numberOfDeletedContacts: Int {
+    public var numberOfUnsyncedDeletedContacts: Int {
         let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
         request.predicate = NSPredicate(format: "statusRaw == %@ AND syncedWithCallDirectory==false", ContactStatus.deleted.rawValue)
 
@@ -104,9 +122,8 @@ extension CoreDataStore: PersistentStore {
         }
     }
     
-    public var numberOfUnSyncedContacts: Int {
+    public var numberOfUnsyncedCreatedContacts: Int {
         let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
-//        request.predicate = NSPredicate(format: "syncedWithCallDirectory==false")
         request.predicate = NSPredicate(format: "statusRaw == %@ AND syncedWithCallDirectory==false", ContactStatus.created.rawValue)
 
         do {
@@ -120,6 +137,13 @@ extension CoreDataStore: PersistentStore {
 
 public class CoreDataStore: NSObject {
     
+    private struct Configuration {
+        static let groupIdentifier = "group.com.dhorvath.CallKitPrototype"
+        static let fileName = "Contacts.sqlite"
+        static let modelName = "Contacts"
+        static let containerName = "Contacts"
+    }
+    
     public var contacts: [Contact] {
         do {
             let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
@@ -131,22 +155,25 @@ public class CoreDataStore: NSObject {
         }
     }
     
-    public lazy var container: NSPersistentContainer = {
+    private lazy var container: NSPersistentContainer = {
         let bundle = Bundle(for: CoreDataBundleHelper.self)
-        let group = "group.com.dhorvath.CallKitPrototype"
-        let fileName = "Contacts.sqlite"
         
-        let modelURL = bundle.url(forResource: "Contacts", withExtension: "momd")!
-        let managedObjectModel = NSManagedObjectModel(contentsOf: modelURL)
-        
-        guard let baseURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group) else {
-            fatalError("Error creating base URL for \(group)")
+        guard let modelURL = bundle.url(forResource: Configuration.modelName, withExtension: "momd") else {
+            fatalError("Error loading model from bundle")
         }
         
-        let storeUrl = baseURL.appendingPathComponent(fileName)
+        guard let managedObjectModel = NSManagedObjectModel(contentsOf: modelURL) else {
+            fatalError("Error initializing mom from: \(modelURL)")
+        }
         
-        let container = NSPersistentContainer(name: "Contacts", managedObjectModel: managedObjectModel!)
+        guard let baseURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Configuration.groupIdentifier) else {
+            fatalError("Error creating baseURL for \(Configuration.groupIdentifier)")
+        }
         
+        let container = NSPersistentContainer(name: Configuration.containerName, managedObjectModel: managedObjectModel)
+        
+        let storeUrl = baseURL.appendingPathComponent(Configuration.fileName)
+
         let description = NSPersistentStoreDescription()
         description.url = storeUrl
         container.persistentStoreDescriptions = [description]
@@ -161,72 +188,18 @@ public class CoreDataStore: NSObject {
     public override init() {
         super.init()
     }
-//    public override init() {
-//        let bundle = Bundle(for: CoreDataBundleHelper.self)
-//        let group = "group.com.dhorvath.CallKitPrototype"
-//        let fileName = "Contacts.sqlite"
-//
-//        let modelURL = bundle.url(forResource: "Contacts", withExtension: "momd")!
-//        let managedObjectModel = NSManagedObjectModel(contentsOf: modelURL)
-////        let container = NSPersistentContainer(name: "Contacts", managedObjectModel: managedObjectModel!)
-//
-//        guard let baseURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group) else {
-//            fatalError("Error creating base URL for \(group)")
-//        }
-//
-//        let storeUrl = baseURL.appendingPathComponent(fileName)
-//
-//        let container = NSPersistentContainer(name: "Contacts", managedObjectModel: managedObjectModel!)
-//
-//        let description = NSPersistentStoreDescription()
-//        description.url = storeUrl
-//        container.persistentStoreDescriptions = [description]
-//
-//        container.loadPersistentStores { _, error in
-//            print(error.debugDescription)
-//        }
-//
-//        self.container = container
-//        super.init()
-//
-//        print("contactNumber: ", contacts.count)
-//    }
 
-    public func loadUnsyncedContacts() throws -> [Contact] {
+    public func loadUnsyncedContacts(for status: ContactStatus) throws -> [Contact] {
         let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
-        request.fetchBatchSize = 1000
-        request.fetchLimit = 1000
+        request.fetchBatchSize = 4000
+        request.fetchLimit = 4000
         request.sortDescriptors = [NSSortDescriptor(key: "mobileNumber", ascending: true)]
-//        request.predicate = NSPredicate(format: "syncedWithCallDirectory==false")
-        request.predicate = NSPredicate(format: "statusRaw == %@ AND syncedWithCallDirectory==false", ContactStatus.created.rawValue)
-
-    
+        request.predicate = NSPredicate(format: "statusRaw == %@ AND syncedWithCallDirectory==false", status.rawValue)
+        
         return try container.viewContext.fetch(request)
             .map { Contact(cdContact: $0) }
     }
-    
-    public func loadUpdatedContacts() throws -> [Contact] {
-        let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
-        request.fetchBatchSize = 1000
-        request.fetchLimit = 1000
-        request.sortDescriptors = [NSSortDescriptor(key: "mobileNumber", ascending: true)]
-        request.predicate = NSPredicate(format: "statusRaw == %@ AND syncedWithCallDirectory==false", ContactStatus.updated.rawValue)
 
-        return try container.viewContext.fetch(request)
-            .map { Contact(cdContact: $0) }
-    }
-    
-    public func loadDeletedContacts() throws -> [Contact] {
-        let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
-        request.fetchBatchSize = 1000
-        request.fetchLimit = 1000
-        request.sortDescriptors = [NSSortDescriptor(key: "mobileNumber", ascending: true)]
-        request.predicate = NSPredicate(format: "statusRaw == %@ AND syncedWithCallDirectory==false", ContactStatus.deleted.rawValue)
-
-        return try container.viewContext.fetch(request)
-            .map { Contact(cdContact: $0) }
-    }
-    
     public func markSynced(contact: Contact) throws {
         let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
         request.predicate = NSPredicate(format: "id==%@", contact.id)
@@ -246,14 +219,14 @@ public class CoreDataStore: NSObject {
         try container.viewContext.save()
     }
     
-    public func object<T: NSManagedObject>(for type: T.Type, with predicate: NSPredicate, in context: NSManagedObjectContext) throws -> T? {
+    private func object<T: NSManagedObject>(for type: T.Type, with predicate: NSPredicate, in context: NSManagedObjectContext) throws -> T? {
         let request: NSFetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: T.entityName)
         request.predicate = predicate
         
         return try context.fetch(request).first as? T
     }
     
-    public func deleteAllItems<T: NSManagedObject>(for entity: T.Type, with predicate: NSPredicate) throws {
+    private func deleteAllItems<T: NSManagedObject>(for entity: T.Type, with predicate: NSPredicate) throws {
         let context = container.viewContext
         
         let request: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: T.entityName)
@@ -363,104 +336,3 @@ extension Contact {
         status = cdContact.status
     }
 }
-
-//extension CoreDataStore: AppContactStore {
-//    public var isEffectivelyEmpty: Bool {
-//        return contacts.isEmpty
-//    }
-//
-//    public var appContactsCount: Int {
-//        return contacts.count
-//    }
-//
-//    public var callDirectoryContactsCount: Int {
-//        do {
-//            let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
-//            request.predicate = NSPredicate(format: "statusRaw != %@ AND callDirectoryNumber != nil", ContactStatus.deleted.rawValue)
-//
-//            return try container.viewContext.fetch(request)
-//                .map { Contact(cdContact: $0) }
-//                .count
-//        } catch {
-//            print(error)
-//            return -1
-//        }
-//    }
-//
-//    public var contactsToDisplay: Single<[Contact]> {
-//        return Single.just(contacts)
-//    }
-//
-//    public func update(contacts: [Contact], isDelta: Bool) -> Completable {
-//        return Completable.create { [weak self] completable in
-//            do {
-//                try contacts.forEach { try self?.storeOrUpdate(contact: $0) }
-//            } catch {
-//                completable(.error(error))
-//            }
-//            return Disposables.create()
-//        }
-//    }
-//
-//    public func removeDeletedContacts() -> Completable {
-//        return Completable.create { [weak self] completable in
-//            do {
-//                let predicate = NSPredicate(format: "statusRaw == %@ AND syncedWithCallDirectory == true", ContactStatus.deleted.rawValue)
-//                try self?.deleteAllItems(for: CDContact.self, with: predicate)
-//                completable(.completed)
-//            } catch {
-//                completable(.error(error))
-//            }
-//            return Disposables.create()
-//        }
-//    }
-//
-//    public func deleteAllContacts() -> Completable {
-//        return Completable.create { [weak self] completable in
-//            do {
-//                try self?.deleteAllItems(for: CDContact.self)
-//                completable(.completed)
-//            } catch {
-//                completable(.error(error))
-//            }
-//            return Disposables.create()
-//        }
-//    }
-//
-//    public func markAllUnsynced() -> Completable {
-//        let context = container.viewContext
-//
-//        return Completable.create { completable in
-//            do {
-//                let request: NSFetchRequest<CDContact> = CDContact.fetchRequest()
-//                request.predicate = NSPredicate(format: "syncedWithCallDirectory == true")
-//                let syncedContacts = try context.fetch(request)
-//                syncedContacts.forEach { $0.syncedWithCallDirectory = true }
-//                try context.save()
-//            } catch {
-//                completable(.error(error))
-//            }
-//            return Disposables.create()
-//        }
-//    }
-//
-//    // WTF
-//    public func cloneContactsWithSecondaryNumbers() -> Completable {
-//        return Completable.create { completable in
-//            completable(.completed)
-//            return Disposables.create()
-//        }
-//    }
-//
-//    // WTFF
-//    public func preparePagingIndicesForCallDirectorySync() -> Completable {
-//        return .empty()
-//    }
-//
-//    // WTFFF
-//    public func clearIndices() -> Completable {
-//        return .empty()
-//    }
-//
-//
-//}

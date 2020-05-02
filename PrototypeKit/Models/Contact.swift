@@ -63,6 +63,12 @@ extension Contact {
     }
 }
 
+extension Contact: Hashable {
+    public var hashValue: Int {
+        return Int(mobileNumber?.sanitizedPhoneNumberString() ?? "0") ?? 0
+    }
+}
+
 extension Contact: Decodable, Equatable {
     enum CodingKeys: String, CodingKey {
         case id = "objId"
@@ -77,7 +83,11 @@ extension Contact: Decodable, Equatable {
         case address
         case status = "state"
     }
-
+    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.mobileNumber == rhs.mobileNumber
+    }
+    
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
@@ -123,7 +133,7 @@ extension Contact {
 
 extension String {
     ///  Deletes characters that aren't decimal digits
-    func sanitizedPhoneNumberString() -> String? {
+    public func sanitizedPhoneNumberString() -> String? {
         return String(self.filter { String($0).rangeOfCharacter(from: CharacterSet.decimalDigits) != nil })
     }
 }

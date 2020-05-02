@@ -13,11 +13,17 @@ import CoreData
 
 public protocol ContactsProviderProtocol {
     var contacts: Observable<[Contact]> { get }
+    var unsyncedContacts: Observable<Int> { get }
     var callDirectoryUpdateAvailable: Observable<Bool> { get }
     func fetchContacts() -> Single<[Contact]>
 }
 
 public class MockContactsProvider: ContactsProviderProtocol {
+    public let unsyncedContactsSubject = BehaviorSubject<Int>(value: 0)
+    
+    public var unsyncedContacts: Observable<Int> {
+        return unsyncedContactsSubject.asObservable()
+    }
     
     private let coreDataStore: CoreDataStore
 
@@ -41,7 +47,12 @@ public class MockContactsProvider: ContactsProviderProtocol {
         if coreDataStore.contacts.isEmpty {
             initialFetchAndStore()
         }
-    
+
+//        let answer = zip(coreDataStore.contacts, Array(Set(coreDataStore.contacts))).enumerated().filter() {
+//            $1.0 == $1.1
+//        }.map{$0.0}
+//
+//        print(answer)
 //        try? coreDataStore.resetSyncState()
         
     }
@@ -51,9 +62,13 @@ public class MockContactsProvider: ContactsProviderProtocol {
             .asObservable()
             .observeOn(MainScheduler.instance)
             .subscribe(onNext: { [weak self] contacts in
+                let removedDuplicated = Array(Set(contacts))
                 do {
-                    try contacts.forEach { try self?.coreDataStore.storeOrUpdate(contact: $0) }
+                    try removedDuplicated.forEach { try self?.coreDataStore.storeOrUpdate(contact: $0) }
                     self?.contactsSubject.onNext(self?.coreDataStore.contacts ?? [])
+                    
+//                    let unsyncedContacts = self?.coreDataStore.numberOfUnSyncedContacts ?? 0
+//                    self?.unsyncedContactsSubject.onNext(unsyncedContacts)
                 } catch {
                     print(error)
                 }
@@ -63,7 +78,7 @@ public class MockContactsProvider: ContactsProviderProtocol {
     public func fetchContacts() -> Single<[Contact]> {
         let bundle = Bundle(for: BundleHelper.self)
 
-        let url = bundle.url(forResource: "generated_30000", withExtension: "json")!
+        let url = bundle.url(forResource: "generated_100000", withExtension: "json")!
         let data = try! Data(contentsOf: url)
         let contacts = try! JSONDecoder().decode([Contact].self, from: data)
 
@@ -88,3 +103,12 @@ public class MockContactsProvider: ContactsProviderProtocol {
 }
 
 private class BundleHelper {}
+
+
+extension Array where Element: Hashable {
+    func differences(from other: [Element]) -> [Element] {
+        let thisSet = Set(self)
+        let otherSet = Set(other)
+        return Array(thisSet.symmetricDifference(otherSet))
+    }
+}
