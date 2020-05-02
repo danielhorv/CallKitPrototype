@@ -14,7 +14,7 @@ import CoreData
 public protocol ContactsProviderProtocol {
     var contacts: Observable<[Contact]> { get }
     var unsyncedContacts: Observable<Int> { get }
-    var callDirectoryUpdateAvailable: Observable<Bool> { get }
+//    var callDirectoryUpdateAvailable: Observable<Bool> { get }
     func fetchContacts() -> Single<[Contact]>
 }
 
@@ -33,14 +33,6 @@ public class MockContactsProvider: ContactsProviderProtocol {
         return contactsSubject.asObservable()
     }
     
-    private lazy var updateSubject = PublishSubject<Bool>()
-    
-    public var callDirectoryUpdateAvailable: Observable<Bool> {
-        return contacts
-            .distinctUntilChanged()
-            .map { _ in true }
-    }
-    
     public init(coreDataStore: CoreDataStore) {
         self.coreDataStore = coreDataStore
         
@@ -48,11 +40,8 @@ public class MockContactsProvider: ContactsProviderProtocol {
             initialFetchAndStore()
         }
 
-//        let answer = zip(coreDataStore.contacts, Array(Set(coreDataStore.contacts))).enumerated().filter() {
-//            $1.0 == $1.1
-//        }.map{$0.0}
-//
-//        print(answer)
+        // TODO: handle duplocates
+        
 //        try? coreDataStore.resetSyncState()
         
     }

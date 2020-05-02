@@ -17,6 +17,7 @@ enum SyncState {
     case syncDeletedContacts(CGFloat)
     case syncUpdatedContacts(CGFloat)
     case finished
+    case cancelled
 }
 
 class CallDirectorySyncController: NSObject {
@@ -26,6 +27,8 @@ class CallDirectorySyncController: NSObject {
     public var isSynronising: Bool = false
     
     private var syncStateSubject = BehaviorSubject<SyncState>(value: .initial)
+    
+    private var isCancelled: Bool = false
     
     public var syncState: Observable<SyncState> {
         return syncStateSubject.asObservable()
@@ -38,19 +41,34 @@ class CallDirectorySyncController: NSObject {
         print("numberOfUpdatedContacts: ", coreDataStore.numberOfUnsyncedUpdatedContacts)
     }
     
+    // unsyncedContacts need to be stored
+    // because it's in PersistentProvider an ComputedProperty and
+    // we need the initial count value of unsynced contacts
     private var unsyncedContacts: Int = 0
     
+    
+    // Start syncronization - reloadExtension until there are unsynced contacts
     public func startSync() {
+        isCancelled = false
         unsyncedContacts = coreDataStore.numberOfUnsyncedContacts
         print(unsyncedContacts)
         sync()
     }
     
+    public func stopSync() {
+        isCancelled = true
+        sync()
+    }
+    
+    // this function called recursive
     private func sync() {
+        guard !isCancelled else {
+            syncStateSubject.onNext(.cancelled)
+            return
+        }
+        
         CXCallDirectoryManager.sharedInstance.reloadExtension(withIdentifier: "com.dhorvath.CallKitPrototype.CallExtension", completionHandler: { [weak self] error in
-            DispatchQueue.main.async {
                 self?.handleExtensionReloadCompletion(with: error)
-            }
         })
     }
     
@@ -113,9 +131,7 @@ class AppNavigator: Navigator, Flow {
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
             self?.callDirectorySyncController.startSync()
         }
-        
-        
-        
+ 
         return nil
     }
     
@@ -123,7 +139,7 @@ class AppNavigator: Navigator, Flow {
         switch destination {
         case .contacts:
             let contactsViewController = ContactsViewController()
-            contactsViewController.reactor = ContactsReactor(contactsProvider: contactsProvider)
+            contactsViewController.reactor = ContactsReactor(contactsProvider: contactsProvider, callDirectorySyncController: callDirectorySyncController)
             appDelegate?.window?.rootViewController = UINavigationController(rootViewController: contactsViewController)
         }
     }

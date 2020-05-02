@@ -98,14 +98,16 @@ class ContactsViewController: UIViewController, View {
 //            .disposed(by: disposeBag)
         
         reloadBarButtonItem.rx.tap
-            .subscribe(onNext: { [weak self] in
-                CXCallDirectoryManager.sharedInstance.reloadExtension(withIdentifier: "com.dhorvath.CallKitPrototype.CallExtension", completionHandler: { (error) in
-                    if let error = error {
-                        print("Error reloading extension: \(error.localizedDescription)")
-                    }
-                })
-//                self?.callDirectorySyncController.sync()
-            })
+            .map { _ in Reactor.Action.stopSync }
+            .bind(to: reactor.action)
+//            .subscribe(onNext: { [weak self] in
+//                CXCallDirectoryManager.sharedInstance.reloadExtension(withIdentifier: "com.dhorvath.CallKitPrototype.CallExtension", completionHandler: { (error) in
+//                    if let error = error {
+//                        print("Error reloading extension: \(error.localizedDescription)")
+//                    }
+//                })
+//                self?.callDirectorySyncController.stopSync()
+//            })
             .disposed(by: disposeBag)
         
         reactor.state.map { $0.contacts }
@@ -121,6 +123,7 @@ class ContactsViewController: UIViewController, View {
 class ContactsReactor: Reactor {
     
     enum Action {
+        case stopSync
     }
     
     enum Mutation {
@@ -132,11 +135,12 @@ class ContactsReactor: Reactor {
     }
     
     private let contactsProvider: ContactsProviderProtocol
-    
+    private let callDirectorySyncController: CallDirectorySyncController
     let initialState = State()
     
-    init(contactsProvider: ContactsProviderProtocol) {
+    init(contactsProvider: ContactsProviderProtocol, callDirectorySyncController: CallDirectorySyncController) {
         self.contactsProvider = contactsProvider
+        self.callDirectorySyncController = callDirectorySyncController
     }
     
     func transform(mutation: Observable<Mutation>) -> Observable<Mutation> {
@@ -147,15 +151,14 @@ class ContactsReactor: Reactor {
         return .merge(mutation, contactObservable)
     }
     
-//    func mutate(action: ContactsReactor.Action) -> Observable<ContactsReactor.Mutation> {
-//        switch action {
-//        case .loadContacts:
-//            return contactsProvider.fetchContacts()
-//                .asObservable()
-//                .map { Mutation.setContacts($0) }
-//        }
-//    }
-//
+    func mutate(action: ContactsReactor.Action) -> Observable<ContactsReactor.Mutation> {
+        switch action {
+        case .stopSync:
+            callDirectorySyncController.stopSync()
+            return .empty()
+        }
+    }
+
     func reduce(state: State, mutation: Mutation) -> State {
         var newState = state
         

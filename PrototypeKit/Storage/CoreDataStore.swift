@@ -36,7 +36,6 @@ public protocol PersistentStore {
     var numberOfUnsyncedCreatedContacts: Int { get }
     var numberOfUnsyncedUpdatedContacts: Int { get }
     var numberOfUnsyncedDeletedContacts: Int { get }
-    var callDirectoryOperation: CallDirectoryOperation { get set }
 }
 
 public protocol CallDirectoryProviderProtocol {
@@ -44,6 +43,7 @@ public protocol CallDirectoryProviderProtocol {
     func markSynced(contact: Contact) throws
     func storeOrUpdate(contact: Contact) throws
     func delete(contact: Contact) throws
+    var callDirectoryOperation: CallDirectoryOperation { get set }
 }
 
 extension PersistentStore {
@@ -134,6 +134,8 @@ extension CoreDataStore: PersistentStore {
         }
     }
 }
+
+extension CoreDataStore: CallDirectoryProviderProtocol { }
 
 public class CoreDataStore: NSObject {
     

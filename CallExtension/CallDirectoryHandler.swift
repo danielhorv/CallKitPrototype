@@ -12,8 +12,8 @@ import PrototypeKit
 import CoreData
 
 class CallDirectoryHandler: CXCallDirectoryProvider {
-
-    private let coreDataStore = CoreDataStore()
+    
+    private let coreDataStore: CallDirectoryProviderProtocol = CoreDataStore()
 
     override init() {
         super.init()
@@ -21,7 +21,7 @@ class CallDirectoryHandler: CXCallDirectoryProvider {
     
     override func beginRequest(with context: CXCallDirectoryExtensionContext) {
         context.delegate = self
-
+        
 //        context.removeAllIdentificationEntries()
 //        context.completeRequest()
         // Check whether this is an "incremental" data request. If so, only provide the set of phone number blocking
