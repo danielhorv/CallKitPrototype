@@ -28,6 +28,13 @@
 		9E0389592459DC5A0093E67C /* AppNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E0389582459DC5A0093E67C /* AppNavigator.swift */; };
 		9E7EE81D245B13C6002CFDC0 /* generated_500.json in Resources */ = {isa = PBXBuildFile; fileRef = 9E7EE81C245B13C6002CFDC0 /* generated_500.json */; };
 		9E7EE81F245B16C5002CFDC0 /* generated_30000.json in Resources */ = {isa = PBXBuildFile; fileRef = 9E7EE81E245B16C5002CFDC0 /* generated_30000.json */; };
+		9E831DB7245EFCEC008BAED9 /* CallDirectorySyncController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E831DB6245EFCEC008BAED9 /* CallDirectorySyncController.swift */; };
+		9E831DB9245EFD95008BAED9 /* CallKitConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E831DB8245EFD95008BAED9 /* CallKitConfiguration.swift */; };
+		9E831DBB245EFEA5008BAED9 /* ContactsReactor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E831DBA245EFEA5008BAED9 /* ContactsReactor.swift */; };
+		9E831DBD245EFEF7008BAED9 /* Contacts+DataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E831DBC245EFEF7008BAED9 /* Contacts+DataSource.swift */; };
+		9E831DBF245F00AD008BAED9 /* Contact+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E831DBE245F00AD008BAED9 /* Contact+Extension.swift */; };
+		9E831DC1245F016D008BAED9 /* PersistentStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E831DC0245F016D008BAED9 /* PersistentStore.swift */; };
+		9E831DC3245F0181008BAED9 /* CallDirectoryProviderProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E831DC2245F0181008BAED9 /* CallDirectoryProviderProtocol.swift */; };
 		9ED26D9C245AE0840006A251 /* generated_100000.json in Resources */ = {isa = PBXBuildFile; fileRef = 9ED26D9B245AE0830006A251 /* generated_100000.json */; };
 /* End PBXBuildFile section */
 
@@ -118,6 +125,13 @@
 		9E0389582459DC5A0093E67C /* AppNavigator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNavigator.swift; sourceTree = "<group>"; };
 		9E7EE81C245B13C6002CFDC0 /* generated_500.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = generated_500.json; sourceTree = "<group>"; };
 		9E7EE81E245B16C5002CFDC0 /* generated_30000.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = generated_30000.json; sourceTree = "<group>"; };
+		9E831DB6245EFCEC008BAED9 /* CallDirectorySyncController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallDirectorySyncController.swift; sourceTree = "<group>"; };
+		9E831DB8245EFD95008BAED9 /* CallKitConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallKitConfiguration.swift; sourceTree = "<group>"; };
+		9E831DBA245EFEA5008BAED9 /* ContactsReactor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsReactor.swift; sourceTree = "<group>"; };
+		9E831DBC245EFEF7008BAED9 /* Contacts+DataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Contacts+DataSource.swift"; sourceTree = "<group>"; };
+		9E831DBE245F00AD008BAED9 /* Contact+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Contact+Extension.swift"; sourceTree = "<group>"; };
+		9E831DC0245F016D008BAED9 /* PersistentStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentStore.swift; sourceTree = "<group>"; };
+		9E831DC2245F0181008BAED9 /* CallDirectoryProviderProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallDirectoryProviderProtocol.swift; sourceTree = "<group>"; };
 		9ED26D9B245AE0830006A251 /* generated_100000.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = generated_100000.json; sourceTree = "<group>"; };
 		B10CE8EC499ED68B1AA6F5B0 /* Pods-PrototypeKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PrototypeKit.release.xcconfig"; path = "Target Support Files/Pods-PrototypeKit/Pods-PrototypeKit.release.xcconfig"; sourceTree = "<group>"; };
 		CC47E70C64740AF7EAE7360C /* Pods-CallKitPrototype.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CallKitPrototype.release.xcconfig"; path = "Target Support Files/Pods-CallKitPrototype/Pods-CallKitPrototype.release.xcconfig"; sourceTree = "<group>"; };
@@ -174,8 +188,11 @@
 		9E00711B2459E19A002CEF36 /* Storage */ = {
 			isa = PBXGroup;
 			children = (
+				9E831DC2245F0181008BAED9 /* CallDirectoryProviderProtocol.swift */,
+				9E831DC0245F016D008BAED9 /* PersistentStore.swift */,
 				9E00711F2459E23E002CEF36 /* CoreDataStore.swift */,
 				9E0071212459E287002CEF36 /* Contacts.xcdatamodeld */,
+				9E831DBE245F00AD008BAED9 /* Contact+Extension.swift */,
 			);
 			path = Storage;
 			sourceTree = "<group>";
@@ -228,6 +245,7 @@
 			children = (
 				9E0071372459F382002CEF36 /* CallKitPrototype.entitlements */,
 				9E03892B2459DA1C0093E67C /* AppDelegate.swift */,
+				9E831DB6245EFCEC008BAED9 /* CallDirectorySyncController.swift */,
 				9E0389452459DB0B0093E67C /* Contacts */,
 				9E0389432459DAEF0093E67C /* Navigation */,
 				9E0389442459DAF80093E67C /* SupportingFiles */,
@@ -258,6 +276,8 @@
 			isa = PBXGroup;
 			children = (
 				9E03893F2459DAB30093E67C /* ContactsViewController.swift */,
+				9E831DBA245EFEA5008BAED9 /* ContactsReactor.swift */,
+				9E831DBC245EFEF7008BAED9 /* Contacts+DataSource.swift */,
 			);
 			path = Contacts;
 			sourceTree = "<group>";
@@ -270,6 +290,7 @@
 				9E0071182459DEB1002CEF36 /* Models */,
 				9E03894D2459DB750093E67C /* PrototypeKit.h */,
 				9E03894E2459DB750093E67C /* Info.plist */,
+				9E831DB8245EFD95008BAED9 /* CallKitConfiguration.swift */,
 			);
 			path = PrototypeKit;
 			sourceTree = "<group>";
@@ -507,8 +528,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E03892C2459DA1C0093E67C /* AppDelegate.swift in Sources */,
+				9E831DB7245EFCEC008BAED9 /* CallDirectorySyncController.swift in Sources */,
 				9E0389592459DC5A0093E67C /* AppNavigator.swift in Sources */,
+				9E831DBB245EFEA5008BAED9 /* ContactsReactor.swift in Sources */,
 				9E0389402459DAB30093E67C /* ContactsViewController.swift in Sources */,
+				9E831DBD245EFEF7008BAED9 /* Contacts+DataSource.swift in Sources */,
 				9E0389422459DAD10093E67C /* Navigator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -518,8 +542,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E0071202459E23E002CEF36 /* CoreDataStore.swift in Sources */,
+				9E831DB9245EFD95008BAED9 /* CallKitConfiguration.swift in Sources */,
 				9E00711A2459DEBC002CEF36 /* Contact.swift in Sources */,
 				9E0071232459E287002CEF36 /* Contacts.xcdatamodeld in Sources */,
+				9E831DC3245F0181008BAED9 /* CallDirectoryProviderProtocol.swift in Sources */,
+				9E831DBF245F00AD008BAED9 /* Contact+Extension.swift in Sources */,
+				9E831DC1245F016D008BAED9 /* PersistentStore.swift in Sources */,
 				9E0071262459E3CF002CEF36 /* ContactsProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -46,26 +46,9 @@ public enum ContactStatus: String, Decodable {
     case deleted
 }
 
-public enum PhoneNumberType: CaseIterable {
-    case phoneNumber
-    case mobileNumber
-}
-
-extension Contact {
-    public func phoneNumber(for type: PhoneNumberType) -> String? {
-        switch type {
-        case .phoneNumber:
-            return phoneNumber
-            
-        case .mobileNumber:
-            return mobileNumber
-        }
-    }
-}
-
 extension Contact: Hashable {
     public var hashValue: Int {
-        return Int(mobileNumber?.sanitizedPhoneNumberString() ?? "0") ?? 0
+        return Int(mobileNumber?.sanitizedPhoneNumberString() ?? "") ?? 0
     }
 }
 
